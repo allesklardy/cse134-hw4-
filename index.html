@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <section>
+        <header>
+            <h1>Forms</h1>
+            <p>An Introduction to Javascript</p>
+        </header>
+        <form action="https://httpbin.org/post" method="POST">
+            <label for="name">Name</label>
+            <input placeholder="Max Mustermann" name="name" id="name" required>
+            <label for="email">Email</label>
+            <input type="email" placeholder="username@example.com" name="email" id="email" required>
+            <label for="comment">Comment</label>
+            <input placeholder="This is the best website I've ever seen ..." name="comment" id="comment" minlength="16" pattern="[A-Za-z0-9.,!? ]+" required>
+            <input hidden="true" name="possible_bot" id="possible_bot" value="true">
+            <button type="submit">Submit</button>
+            <output id="success"></output>
+            <output id="fail"></output>
+        </form>
+    </section>
+
+</body>
+
+</html>
