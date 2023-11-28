@@ -12,21 +12,292 @@
     <section>
         <header>
             <h1>Forms</h1>
+            <noscript style="color:red;">
+                Enable JS for dark mode
+            </noscript>
+            <dark-mode id="dark-mode">
+                🌙
+            </dark-mode>
         </header>
-        <form action="https://httpbin.org/post" method="POST">
+        <form action="https://httpbin.org/post" method="POST" id="myForm" autocomplete="off">
             <label for="name">Name</label>
-            <input placeholder="Max Mustermann" name="name" id="name" required>
+            <input placeholder="John Smith" name="name" id="name" minlength="5" required>
+            <div class="info-section">
+                <output id="name_success" class="success"></output>
+                <output id="name_fail" class="error"></output>
+            </div>
             <label for="email">Email</label>
-            <input type="email" placeholder="username@example.com" name="email" id="email" required>
+            <input type="email" placeholder="username@example.com" name="email" id="email" required
+                pattern="[A-Za-z0-9@._-]">
+            <div class="info-section">
+                <output id="email_success" class="success"></output>
+                <output id="email_fail" class="error"></output>
+            </div>
             <label for="comment">Comment</label>
-            <input placeholder="This is the best website I've ever seen ..." name="comment" id="comment" minlength="16" pattern="[A-Za-z0-9.,!? ]+" required>
+            <textarea placeholder="This is the best website I've ever seen ..." name="comment" id="comment"
+                minlength="16" maxlength="128" pattern="[A-Za-z0-9.,!? ]+" required></textarea>
+            <div class="info-section">
+                <output id="comment_success" class="success"></output>
+                <output id="comment_fail" class="error"></output>
+            </div>
+            <input hidden="true" name="form_errors" id="form_errors" value="">
             <input hidden="true" name="possible_bot" id="possible_bot" value="true">
             <button type="submit">Submit</button>
-            <output id="success"></output>
-            <output id="fail"></output>
         </form>
     </section>
 
 </body>
+
+<script>
+    let name = document.getElementById("name");
+    let email = document.getElementById("email");
+    let comment = document.getElementById("comment");
+
+    let name_success = document.getElementById("name_success");
+    let name_fail = document.getElementById("name_fail");
+    let email_success = document.getElementById("email_success");
+    let email_fail = document.getElementById("email_fail");
+    let comment_success = document.getElementById("comment_success");
+    let comment_fail = document.getElementById("comment_fail");
+
+    let form_errors_field = document.getElementById("form_errors");
+
+    let form_errors = [];
+
+    name.addEventListener("input", validateField);
+    email.addEventListener("input", validateField);
+    comment.addEventListener("input", validateField);
+
+    function validateField(event) {
+        let target = event.target;
+        let target_id = target.id;
+        let target_value = target.value;
+        let target_success = target_id + "_success";
+        let target_fail = target_id + "_fail";
+        target_success = document.getElementById(target_success);
+        target_fail = document.getElementById(target_fail);
+
+        switch (target_id) {
+            case "name":
+                console.log(name_fail.innerHTML)
+                if (target_value.match(/[^A-Za-z0-9@._-]/g)) {
+                    target_value = target_value.replace(/[^A-Za-z0-9@._-]/g, "");
+                    target.value = target_value;
+
+                    flash(target)
+
+
+                    target_fail.innerHTML = "Illegal"
+
+                    fade(name_fail, "Illegal Character")
+
+                    form_errors.push({ msg: "NAME - illegal char" })
+                }
+
+                if (!target.checkValidity()) {
+                    if (target.validity.tooShort) {
+                        name_fail.innerHTML = "too short"
+                        target.setCustomValidity("Please enter your full name")
+                        form_errors.push({ msg: "NAME - too short" })
+                    } else {
+                        name_fail.innerHTML = ""
+                        target.setCustomValidity("")
+                    }
+                } else {
+                    name_fail.innerHTML = ""
+                    target.setCustomValidity("")
+                }
+                break;
+            case "email":
+                if (target_value.match(/[^A-Za-z0-9@._-]/g)) {
+                    target_value = target_value.replace(/[^A-Za-z0-9@._-]/g, "");
+                    target.value = target_value;
+
+                    target_fail.innerHTML = "Email has invalid characters";
+                    flash(target)
+
+                    target.setCustomValidity("Please enter only valid characters")
+
+                    fade(email_fail, "Illegal Character")
+
+                    form_errors.push({ msg: "NAME - illegal char" })
+
+                } else {
+                    target_fail.innerHTML = ""
+                    target.setCustomValidity("")
+                }
+
+                if (!target.checkValidity()) {
+
+                    if (target.validity.tooShort) {
+                        target.setCustomValidity("Please enter a longer / real email")
+                        form_errors.push({ msg: "EMAIL - too short" })
+
+                    }
+                    if (target.validity.patternMismatch) {
+                        target.setCustomValidity("Please enter only valid characters")
+                        form_errors.push({ msg: "EMAIL - illegal char" })
+
+                    }
+
+                    target_fail.innerHTML = "Email is invalid";
+                    target_fail.classList.add("fail");
+                    email_fail.classList.remove("fail");
+                }
+
+
+                break;
+            case "comment":
+                if (target_value.match(/[^A-Za-z0-9@._-]/g)) {
+                    target_value = target_value.replace(/[^A-Za-z0-9@._-]/g, "");
+                    target.value = target_value;
+
+                    flash(target)
+                    target_fail.innerHTML = "comment has invalid characters";
+                    target.setCustomValidity("Please enter only valid characters")
+
+                    fade(comment_fail, "Illegal Character");
+
+
+                    form_errors.push({ msg: "COMMENT - illegal char" })
+
+                } else {
+                    target_fail.innerHTML = ""
+                }
+
+                if (!target.checkValidity()) {
+                    if (target.validity.patternMismatch) {
+                        target.setCustomValidity("Please enter only valid characters")
+
+                    } else {
+                        target.setCustomValidity("")
+                    }
+                }
+
+                target_success.innerHTML = "Characters left: " + (128 - target_value.length)
+
+                if (target_value.length == 0) {
+                    target_success.innerHTML = ""
+                    target_success.style.color = "var(--primary)"
+                } else if (target_value.length >= 128) {
+                    console.log(1)
+                    target_success.style.color = "red"
+                } else if (target_value.length > 64) {
+                    target_fail.innerHTML = ""
+                    console.log(2)
+                    target_success.style.color = "orange"
+                } else if (target_value.length < 16) {
+                    target_fail.innerHTML = "Too short"
+                } else {
+                    if (localStorage.getItem("dm") == 1)
+                        target_success.style.color = "white"
+                    else
+                        target_success.style.color = "black"
+                }
+
+
+                break;
+        }
+        console.log(form_errors)
+        form_errors_field.value = JSON.stringify(form_errors);
+    }
+
+    const flash = (el) => {
+        console.log("glash")
+        setTimeout(() => {
+            el.style.backgroundColor = "var(--bg)";
+        }, 250);
+
+        setTimeout(() => {
+            el.style.backgroundColor = "orange";
+
+        }, 500);
+
+        setTimeout(() => {
+            el.style.backgroundColor = "var(--bg)";
+
+
+        }, 750);
+    }
+
+
+    const fade = (el, text) => {
+        setTimeout(function () {
+            el.innerHTML = text;
+            console.log(el.innerHTML)
+        }, 10);
+
+
+        setTimeout(function () {
+            el.innerHTML = '';
+            console.log(el.innerHTML)
+        }, 1000);
+    }
+
+    let toggle = document.getElementById("dark-mode");
+    let root = document.querySelector(":root")
+
+    let dm_temp = localStorage.getItem("dm") == "1"
+    toggle.innerHTML = dm_temp ? "🌙" : "☀️";
+
+
+    if (dm_temp) {
+        console.log("dm")
+        root.style.setProperty("--primary", "white")
+        root.style.setProperty("--primary-selected", "ddd")
+        root.style.setProperty("--bg", "black")
+    } else {
+        console.log("bm")
+        root.style.setProperty("--primary", "black")
+        root.style.setProperty("--primary-selected", "444")
+        root.style.setProperty("--bg", "white")
+    }
+
+    document.getElementById("dark-mode").addEventListener("click", () => {
+        // make dark
+        let dm = localStorage.getItem("dm")
+        dm = dm === "1"
+        console.log("LS: " + dm)
+
+        if (dm == null) {
+            dm = false;
+        } else {
+            if (dm) {
+                dm = false;
+            } else {
+                dm = true;
+            }
+
+        }
+        if (dm) {
+            localStorage.setItem("dm", "1")
+        } else {
+            localStorage.setItem("dm", "2")
+        }
+        console.log(dm)
+        toggle.innerHTML = dm ? "🌙" : "☀️";
+
+
+
+        if (dm) {
+            console.log("dm")
+            root.style.setProperty("--primary", "white")
+            root.style.setProperty("--primary-selected", "ddd")
+            root.style.setProperty("--bg", "black")
+        } else {
+            console.log("bm")
+            root.style.setProperty("--primary", "black")
+            root.style.setProperty("--primary-selected", "444")
+            root.style.setProperty("--bg", "white")
+        }
+
+    })
+
+</script>
+
+</html>
+
+
+</script>
 
 </html>
